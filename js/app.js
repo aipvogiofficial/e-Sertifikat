@@ -13,12 +13,15 @@
   const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   const ROMAWI = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
 
+  // URL server dari config.js bersifat tetap; kolom "Pengaturan server" disembunyikan
+  const API_TETAP = ((window.ESERTI_CONFIG && window.ESERTI_CONFIG.API_URL) || '').trim();
+
   const S = {
-    api: LS.get('eserti_api') || (window.ESERTI_CONFIG && window.ESERTI_CONFIG.API_URL) || '',
+    api: API_TETAP || LS.get('eserti_api') || '',
     token: LS.get('eserti_token'),
     user: JSON.parse(LS.get('eserti_user') || 'null'),
     kegiatan: [], pengaturan: {}, sertifikat: null,
-    editId: null, teksManual: false
+    editId: null, teksManual: false, terakhir: null
   };
   const demo = () => S.api === 'demo';
 
@@ -90,6 +93,7 @@
   /* ---------------- login ---------------- */
   function tampilLogin() {
     $('#v-app').hidden = true; $('#v-login').hidden = false;
+    $('.server').hidden = !!API_TETAP;
     $('#in-api').value = demo() ? '' : S.api;
     if (!S.api) $('.server').open = true;
   }
@@ -245,14 +249,42 @@
   $('#c-aman').onchange = gambarPratinjau;
   $('#b-reset-teks').onclick = () => { isiTeksBawaan(); gambarPratinjau(); };
 
+  function sembunyikanStatus() { $('#ok-card').hidden = true; $('#edit-banner').hidden = true; }
+
   function kosongkanForm() {
-    S.editId = null;
+    S.editId = null; S.terakhir = null;
     F.nomor_urut.value = ''; F.nama.value = ''; F.peran.value = 'Narasumber'; F.peran_lain.value = '';
-    $('#l-peran-lain').hidden = true; $('#edit-banner').hidden = true;
-    isiTeksBawaan(); gambarPratinjau();
+    $('#l-peran-lain').hidden = true; sembunyikanStatus();
+    isiTeksBawaan(); infoNomorTerakhir(); gambarPratinjau();
   }
+
+  // sertifikat berikutnya: kegiatan & peran tetap, nomor +1, nama dikosongkan
+  function berikutnya() {
+    const urut = parseInt(String(F.nomor_urut.value).replace(/\D/g, ''), 10);
+    S.editId = null; S.terakhir = null;
+    F.nomor_urut.value = isNaN(urut) ? '' : String(urut + 1).padStart(3, '0');
+    F.nama.value = '';
+    sembunyikanStatus(); isiTeksBawaan(); infoNomorTerakhir(); gambarPratinjau();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    F.nama.focus();
+  }
+
+  function infoNomorTerakhir() {
+    const el = $('#nomor-terakhir');
+    if (!S.sertifikat || !S.sertifikat.length) { el.hidden = true; return; }
+    const maks = Math.max(...S.sertifikat.map(s => parseInt(s.nomor_urut || String(s.nomor).split('/')[0], 10) || 0));
+    el.textContent = `Nomor urut terakhir yang dipakai: ${String(maks).padStart(3, '0')}`;
+    el.hidden = false;
+  }
+
   $('#b-baru').onclick = kosongkanForm;
   $('#b-batal-edit').onclick = kosongkanForm;
+  $('#b-berikutnya').onclick = berikutnya;
+  $('#b-unduh-lagi').onclick = async () => {
+    if (!S.terakhir) return;
+    loading(true, 'Membuat file…');
+    try { await keluarkan(S.terakhir.data, S.terakhir.format); } catch (err) { toast(err.message, true); } finally { loading(false); }
+  };
 
   function validasi(d) {
     if (!kegDipilih()) return 'Pilih kegiatan terlebih dahulu.';
@@ -282,7 +314,7 @@
       if (i >= 0) S.sertifikat[i] = r.data; else S.sertifikat.unshift(r.data);
     }
     S.editId = r.data.id;
-    $('#edit-banner').hidden = false; $('#edit-nomor').textContent = r.data.nomor;
+    infoNomorTerakhir();
     return r.data;
   }
 
@@ -325,8 +357,14 @@
       // pakai teks sertifikat yang baru tersimpan agar nama file sesuai
       // bila jenis 'share', jalankan setelah loading ditutup agar dialog bagikan tidak terhalang
       loading(false);
+      S.terakhir = { data: d, format: b.dataset.out };
+      $('#edit-banner').hidden = true;
+      $('#ok-nomor').textContent = rec.nomor;
+      $('#ok-nama').textContent = `${rec.nama_penerima} · ${rec.peran}`;
+      $('#b-unduh-lagi').textContent = b.dataset.out === 'share' ? 'Bagikan lagi' : 'Unduh lagi (' + b.dataset.out.toUpperCase() + ')';
+      $('#ok-card').hidden = false;
+      $('#ok-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       await keluarkan(d, b.dataset.out);
-      toast(`Tersimpan: ${rec.nomor}`);
     } catch (err) { toast(err.message, true); }
     finally { loading(false); $$('[data-out]').forEach(x => (x.disabled = false)); }
   }));
@@ -343,6 +381,7 @@
     else { F.peran.value = '__lain'; F.peran_lain.value = s.peran; $('#l-peran-lain').hidden = false; }
     F.paragraf.value = d.paragraf || ''; F.tempat_tanggal.value = d.tempat_tanggal || '';
     S.teksManual = true;
+    S.terakhir = null; $('#ok-card').hidden = true;
     $('#edit-banner').hidden = false; $('#edit-nomor').textContent = s.nomor;
     bukaTab('buat');
   }
@@ -354,7 +393,7 @@
       const r = await api('listSertifikat');
       if (!r.ok) throw new Error(r.pesan);
       S.sertifikat = (r.data || []).reverse();
-      renderRiwayat();
+      renderRiwayat(); infoNomorTerakhir();
     } catch (err) { $('#riwayat-info').textContent = err.message; }
   }
   $('#b-muat-riwayat').onclick = muatRiwayat;

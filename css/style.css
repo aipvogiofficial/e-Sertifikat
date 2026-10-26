@@ -142,3 +142,13 @@ main { padding: 16px; max-width: 1280px; margin: 0 auto; }
   .top-title strong { font-size: 15px; }
   .aksi .btn { flex: 1 1 100%; }
 }
+
+/* kartu tersimpan & edit */
+.ok-card { background: #edf7ee; border: 1px solid #b9dcbc; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+.ok-head { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; margin-bottom: 12px; }
+.ok-head b { color: var(--ok); }
+.ok-ic { width: 26px; height: 26px; flex: none; border-radius: 50%; background: var(--ok); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.ok-act { display: flex; gap: 8px; flex-wrap: wrap; }
+.ok-act .big { flex: 1 1 220px; padding: 13px 16px; font-size: 15px; }
+.ok-card .hint { margin: 10px 0 0; }
+#edit-banner { display: flex; gap: 10px; align-items: center; justify-content: space-between; }

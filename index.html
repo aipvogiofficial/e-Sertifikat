@@ -62,9 +62,17 @@
     <section id="t-buat" class="tab">
       <div class="buat-grid">
         <form id="f-sert" class="card" autocomplete="off">
+          <div id="ok-card" class="ok-card" hidden>
+            <div class="ok-head"><span class="ok-ic">✓</span><div>Tersimpan: <b id="ok-nomor"></b><br><span id="ok-nama"></span></div></div>
+            <div class="ok-act">
+              <button type="button" class="btn primary big" id="b-berikutnya">＋ Buat sertifikat berikutnya</button>
+              <button type="button" class="btn" id="b-unduh-lagi">Unduh lagi</button>
+            </div>
+            <p class="hint">Jika ada salah ketik, perbaiki di formulir lalu simpan lagi. Sertifikat ini yang akan diperbarui, bukan dibuat baru.</p>
+          </div>
           <div id="edit-banner" class="banner" hidden>
-            Mengedit sertifikat <b id="edit-nomor"></b>. Menyimpan akan memperbarui arsip.
-            <button type="button" class="link" id="b-batal-edit">Buat baru</button>
+            <div>Mengedit sertifikat <b id="edit-nomor"></b> dari Riwayat. Menyimpan akan memperbarui arsip.</div>
+            <button type="button" class="btn sm" id="b-batal-edit">Batal edit</button>
           </div>
           <div id="aset-warn" class="banner warn" hidden>TTD atau stempel belum diunggah. Lengkapi di tab Pengaturan.</div>
 
@@ -82,6 +90,7 @@
               <b id="o-nomor">—</b>
             </div>
           </div>
+          <p class="hint" id="nomor-terakhir" hidden></p>
           <p class="err" id="nomor-warn"></p>
 
           <label>Nama penerima (dengan gelar)
@@ -114,8 +123,8 @@
             <button type="button" class="btn primary" data-out="jpg">Simpan + unduh JPG</button>
             <button type="button" class="btn primary" data-out="pdf">Simpan + unduh PDF</button>
             <button type="button" class="btn" data-out="share">Simpan + bagikan</button>
+            <button type="button" class="btn ghost" id="b-baru">Formulir baru</button>
           </div>
-          <button type="button" class="link" id="b-baru">Kosongkan formulir</button>
         </form>
 
         <div class="card preview">

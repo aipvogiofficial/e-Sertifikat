@@ -5,5 +5,5 @@
  * (URL ini boleh publik: semua aksi tetap butuh login.)
  * ========================================================= */
 window.ESERTI_CONFIG = {
-  API_URL: ''   // contoh: 'https://script.google.com/macros/s/AKfycb.../exec'
+  API_URL: 'https://script.google.com/macros/s/AKfycbyLtqt7JyGfBdMdyKV0z8sHTYadUd6qcqRJUVXjUqRQq5GKw_Yxn1kUCSSEOjSxv3Ms/exec'
 };
