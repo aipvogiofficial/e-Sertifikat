@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sertifikat AIPVOGI</title>
+  <meta name="description" content="Unduh dan cek keaslian sertifikat kegiatan AIPVOGI.">
+  <meta name="theme-color" content="#1F3556">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cek.css">
+</head>
+<body class="publik">
+  <header class="top">
+    <img src="assets/logo.png" alt="" class="top-logo">
+    <div class="top-title"><strong>Sertifikat AIPVOGI</strong><span class="muted">Asosiasi Institusi Pendidikan Tinggi Vokasi Gizi Indonesia</span></div>
+  </header>
+
+  <main class="pub-main">
+    <!-- verifikasi -->
+    <section id="v-verif" class="card" hidden>
+      <div id="verif-hasil"></div>
+    </section>
+
+    <!-- unduh peserta -->
+    <section id="v-unduh" hidden>
+      <div class="card">
+        <span class="eyebrow">Unduh sertifikat</span>
+        <h1 id="keg-nama">Memuat kegiatan…</h1>
+        <p class="muted" id="keg-info"></p>
+        <div id="keg-tutup" class="banner warn" hidden></div>
+        <form id="f-cari" autocomplete="off" hidden>
+          <label>Ketik nama Anda
+            <input name="q" placeholder="contoh: Andi Nurhayati" minlength="4" required autofocus>
+          </label>
+          <button class="btn primary block" type="submit">Cari sertifikat saya</button>
+          <p class="err" id="cari-err"></p>
+        </form>
+        <div id="hasil-cari" class="list"></div>
+      </div>
+
+      <div class="card" id="hasil-sertifikat" hidden>
+        <h2 id="hs-judul">Sertifikat Anda</h2>
+        <img id="hs-img" alt="Pratinjau sertifikat" class="hs-img">
+        <div class="aksi">
+          <button type="button" class="btn primary" id="hs-pdf">Unduh PDF</button>
+          <button type="button" class="btn primary" id="hs-jpg">Unduh JPG</button>
+          <button type="button" class="btn" id="hs-share">Bagikan</button>
+        </div>
+        <p class="hint">Nama atau gelar salah? Hubungi panitia kegiatan untuk perbaikan.</p>
+      </div>
+    </section>
+
+    <!-- tanpa parameter: input kode -->
+    <section id="v-kode" class="card" hidden>
+      <span class="eyebrow">Cek keaslian sertifikat</span>
+      <h1>Verifikasi sertifikat</h1>
+      <p class="muted">Pindai QR pada sertifikat, atau ketik kode 10 karakter yang tertera di bawah QR.</p>
+      <form id="f-kode" autocomplete="off">
+        <label>Kode verifikasi<input name="kode" placeholder="contoh: K7F3QX9M2A" maxlength="12" required style="text-transform:uppercase"></label>
+        <button class="btn primary block" type="submit">Cek keaslian</button>
+      </form>
+    </section>
+
+    <p class="kredit">Developed by <b>Bidang IT dan Komunikasi AIPVOGI</b></p>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+  <div id="loading" class="loading" hidden><div class="spin"></div><span id="loading-txt">Memproses…</span></div>
+
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="vendor/qrcode.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/demo-api.js"></script>
+  <script src="js/cek.js"></script>
+</body>
+</html>

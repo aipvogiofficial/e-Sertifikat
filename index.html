@@ -42,10 +42,10 @@
   <div class="login-card petunjuk">
     <h2>Petunjuk penggunaan</h2>
     <ol class="langkah">
-      <li><b>Kegiatan</b> — tambahkan kegiatan lebih dulu: nama, tanggal, daring/luring, JPL, dan kota terbit. Cukup sekali per kegiatan.</li>
-      <li><b>Buat Sertifikat</b> — pilih kegiatan, ketik nomor urut, nama penerima beserta gelar, dan peran. Cek pratinjau, lalu klik <i>Simpan + unduh JPG/PDF</i> atau <i>Simpan + bagikan</i>.</li>
-      <li><b>Sertifikat berikutnya</b> — setelah tersimpan, klik <i>Buat sertifikat berikutnya</i>: nomor naik otomatis, kegiatan dan peran tetap.</li>
-      <li><b>Riwayat</b> — cari, unduh ulang, atau perbaiki sertifikat yang sudah dibuat.</li>
+      <li><b>Kegiatan</b> — tambahkan kegiatan: nama, tanggal, daring/luring, JPL, kota, dan <b>nomor sertifikat untuk tiap peran</b> (satu nomor untuk semua peserta, satu untuk narasumber, dst.).</li>
+      <li><b>Buat Sertifikat</b> — <i>Satu per satu</i>: pilih kegiatan dan peran (nomor terisi otomatis), ketik nama, lalu simpan + unduh. <i>Banyak nama</i>: unggah Excel berisi daftar nama peserta/panitia.</li>
+      <li><b>Bagikan ke peserta</b> — di tab Kegiatan, aktifkan <i>halaman unduh peserta</i> lalu salin link-nya ke grup WA. Peserta mencari namanya sendiri.</li>
+      <li><b>Riwayat</b> — cari, unduh ulang, atau perbaiki sertifikat. Setiap sertifikat memiliki QR untuk cek keaslian.</li>
     </ol>
     <p class="hint">TTD dan stempel cukup diunggah sekali di tab Pengaturan oleh salah satu admin; semua admin otomatis memakainya.</p>
   </div>
@@ -73,15 +73,20 @@
     <div class="card petunjuk-app" id="petunjuk-app" hidden>
       <div class="petunjuk-head"><h2>Petunjuk penggunaan</h2><button class="btn sm" id="b-tutup-petunjuk">Tutup</button></div>
       <ol class="langkah">
-      <li><b>Kegiatan</b> — tambahkan kegiatan lebih dulu: nama, tanggal, daring/luring, JPL, dan kota terbit. Cukup sekali per kegiatan.</li>
-      <li><b>Buat Sertifikat</b> — pilih kegiatan, ketik nomor urut, nama penerima beserta gelar, dan peran. Cek pratinjau, lalu klik <i>Simpan + unduh JPG/PDF</i> atau <i>Simpan + bagikan</i>.</li>
-      <li><b>Sertifikat berikutnya</b> — setelah tersimpan, klik <i>Buat sertifikat berikutnya</i>: nomor naik otomatis, kegiatan dan peran tetap.</li>
-      <li><b>Riwayat</b> — cari, unduh ulang, atau perbaiki sertifikat yang sudah dibuat.</li>
+      <li><b>Kegiatan</b> — tambahkan kegiatan: nama, tanggal, daring/luring, JPL, kota, dan <b>nomor sertifikat untuk tiap peran</b> (satu nomor untuk semua peserta, satu untuk narasumber, dst.).</li>
+      <li><b>Buat Sertifikat</b> — <i>Satu per satu</i>: pilih kegiatan dan peran (nomor terisi otomatis), ketik nama, lalu simpan + unduh. <i>Banyak nama</i>: unggah Excel berisi daftar nama peserta/panitia.</li>
+      <li><b>Bagikan ke peserta</b> — di tab Kegiatan, aktifkan <i>halaman unduh peserta</i> lalu salin link-nya ke grup WA. Peserta mencari namanya sendiri.</li>
+      <li><b>Riwayat</b> — cari, unduh ulang, atau perbaiki sertifikat. Setiap sertifikat memiliki QR untuk cek keaslian.</li>
     </ol>
     </div>
     <!-- ---------- BUAT ---------- -->
     <section id="t-buat" class="tab">
+      <div class="mode-switch" role="tablist">
+        <button type="button" data-mode="satu" class="on">Satu per satu</button>
+        <button type="button" data-mode="banyak">Banyak nama (Excel)</button>
+      </div>
       <div class="buat-grid">
+        <div>
         <form id="f-sert" class="card" autocomplete="off">
           <div id="ok-card" class="ok-card" hidden>
             <div class="ok-head"><span class="ok-ic">✓</span><div>Tersimpan: <b id="ok-nomor"></b><br><span id="ok-nama"></span></div></div>
@@ -111,7 +116,7 @@
               <b id="o-nomor">—</b>
             </div>
           </div>
-          <p class="hint" id="nomor-terakhir" hidden></p>
+          <p class="hint" id="nomor-sumber"></p>
           <p class="err" id="nomor-warn"></p>
 
           <label>Nama penerima (dengan gelar)
@@ -146,7 +151,48 @@
             <button type="button" class="btn" data-out="share">Simpan + bagikan</button>
             <button type="button" class="btn ghost" id="b-baru">Formulir baru</button>
           </div>
+          <details class="adv autocrat">
+            <summary>Untuk Google Form + Autocrat</summary>
+            <p class="hint">Unduh sertifikat <b>tanpa nama</b> untuk kegiatan dan peran di atas (nama penerima tidak perlu diisi). File ini <b>tidak disimpan ke Riwayat dan tidak memiliki QR</b>.</p>
+            <div class="row-btn">
+              <button type="button" class="btn sm" id="b-autocrat-jpg">Unduh latar tanpa nama (JPG)</button>
+              <button type="button" class="btn sm" id="b-autocrat-png">PNG</button>
+            </div>
+            <ol class="langkah kecil">
+              <li>Google Slides: <i>File → Penyiapan halaman → Khusus</i> 29,7 × 21 cm (A4 lanskap).</li>
+              <li>Klik kanan slide → <i>Ubah latar belakang</i> → pilih gambar yang diunduh.</li>
+              <li>Tambahkan kotak teks selebar slide berisi <code>&lt;&lt;Nama&gt;&gt;</code>: Arial tebal 24 pt, rata tengah, titik tengahnya ±9,4 cm dari atas (tepat di antara "Diberikan Kepada" dan "Atas Partisipasinya Sebagai").</li>
+              <li>Gunakan slide itu sebagai template di Autocrat.</li>
+            </ol>
+          </details>
         </form>
+
+        <div id="bulk" class="card" hidden>
+          <h2>Banyak nama dari Excel</h2>
+          <label>Kegiatan<select id="bk-kegiatan"></select></label>
+          <label>Peran bawaan<select id="bk-peran"></select></label>
+          <p class="hint">Dipakai untuk baris yang kolom Peran-nya kosong. Nomor sertifikat diambil dari pengaturan nomor per peran di kegiatan.</p>
+          <div class="row-btn">
+            <button type="button" class="btn" id="bk-template">Unduh template Excel</button>
+            <label class="btn primary">Pilih file Excel<input type="file" id="bk-file" accept=".xlsx,.xls,.csv" hidden></label>
+          </div>
+          <div id="bk-info" class="bk-info"></div>
+          <div class="tabel-wrap" id="bk-wrap" hidden><table class="tabel" id="bk-tabel"></table></div>
+          <div class="aksi" id="bk-aksi" hidden>
+            <button type="button" class="btn primary" id="bk-proses">Simpan semua</button>
+            <button type="button" class="btn" id="bk-batal">Batal</button>
+          </div>
+          <div class="progres" id="bk-progres" hidden><div class="progres-bar"><span id="bk-bar"></span></div><span id="bk-progres-txt"></span></div>
+          <div id="bk-hasil" class="ok-card" hidden>
+            <div class="ok-head"><span class="ok-ic">✓</span><div id="bk-hasil-txt"></div></div>
+            <div class="ok-act">
+              <button type="button" class="btn" id="bk-zip">Unduh ZIP (JPG per orang)</button>
+              <button type="button" class="btn" id="bk-pdf">Unduh PDF gabungan</button>
+            </div>
+            <div class="link-box" id="bk-link-box"></div>
+          </div>
+        </div>
+        </div>
 
         <div class="card preview">
           <div class="preview-head">
@@ -194,6 +240,20 @@
             <label>Kota terbit<input name="kota" placeholder="contoh: Jakarta"></label>
             <label>Tanggal terbit<input type="date" name="tgl_terbit"></label>
           </div>
+          <h3 class="sub">Nomor sertifikat per peran</h3>
+          <p class="hint">Satu nomor untuk semua orang dengan peran yang sama. Kosongkan peran yang tidak ada di kegiatan ini.</p>
+          <div id="np-list" class="np-list"></div>
+          <div class="row-btn">
+            <select id="np-tambah"><option value="">＋ Tambah peran…</option></select>
+            <button type="button" class="btn sm" id="np-otomatis">Isi nomor otomatis</button>
+          </div>
+          <p class="hint" id="np-info"></p>
+
+          <h3 class="sub">Halaman unduh peserta</h3>
+          <label class="chk"><input type="checkbox" name="buka_publik" value="1"> Buka halaman unduh untuk kegiatan ini</label>
+          <p class="hint">Jika dibuka, siapa pun yang memiliki link kegiatan bisa mencari namanya dan mengunduh sertifikat.</p>
+
+          <h3 class="sub">Teks sertifikat</h3>
           <label>Pola paragraf
             <textarea name="paragraf" rows="4"></textarea>
           </label>
@@ -244,6 +304,13 @@
             </div>
           </div>
 
+          <div class="card">
+            <h2>Latar halaman peserta</h2>
+            <p class="hint">Halaman unduh peserta memakai satu gambar latar yang sudah menyatu dengan TTD dan stempel, sehingga file TTD dan stempel tidak pernah dikirim ke peserta. Latar ini dibuat otomatis setiap kali TTD, stempel, atau penandatangan diubah.</p>
+            <p class="hint" id="latar-info"></p>
+            <button type="button" class="btn sm" id="b-latar">Perbarui latar sekarang</button>
+          </div>
+
           <form id="f-pw" class="card" autocomplete="off">
             <h2>Ganti password</h2>
             <label>Password lama<input type="password" name="lama" autocomplete="current-password" required></label>
@@ -268,6 +335,7 @@
 
 <script src="vendor/jspdf.umd.min.js"></script>
 <script src="js/config.js"></script>
+<script src="vendor/qrcode.js"></script>
 <script src="js/render.js"></script>
 <script src="js/demo-api.js"></script>
 <script src="js/app.js"></script>

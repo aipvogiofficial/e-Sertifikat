@@ -166,3 +166,42 @@ main { padding: 16px; max-width: 1280px; margin: 0 auto; }
 .kredit b { color: var(--navy); }
 .login .kredit { color: var(--muted); }
 @media (max-width: 860px) { .tabs .no { width: 18px; height: 18px; font-size: 11px; margin-bottom: 2px; } }
+
+/* ===== v1.3: mode, nomor per peran, Excel, link ===== */
+.mode-switch { display: inline-flex; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 4px; gap: 4px; margin-bottom: 14px; }
+.mode-switch button { border: 0; background: none; padding: 9px 16px; border-radius: 7px; font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.mode-switch button.on { background: var(--navy); color: #fff; }
+h3.sub { font-size: 14px; color: var(--navy); margin: 18px 0 4px; padding-top: 14px; border-top: 1px solid var(--line); }
+.np-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.np-row { display: grid; grid-template-columns: 110px 90px minmax(0, 1fr) 28px; gap: 8px; align-items: center; }
+.np-row input { margin: 0; padding: 7px 10px; }
+.np-peran { font-weight: 600; font-size: 14px; }
+.np-jadi { grid-column: 2 / 4; grid-row: 2; font-size: 12px; color: var(--navy); font-weight: 600; margin: -2px 0 4px; }
+.np-x { grid-column: 4; grid-row: 1; }
+.np-x { border: 0; background: none; font-size: 20px; color: var(--muted); cursor: pointer; line-height: 1; }
+.np-x:hover { color: var(--danger); }
+.row-btn select { width: auto; margin: 0; padding: 7px 10px; font-size: 14px; }
+.warn-txt { color: var(--danger); }
+.ok-txt { color: var(--ok); font-weight: 600; }
+.hint.warn-txt { color: var(--danger); }
+.pill.ok { background: #e3f2e5; color: var(--ok); }
+.bk-info { font-size: 14px; margin: 14px 0 8px; }
+.tabel-wrap { max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+.tabel { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tabel th { position: sticky; top: 0; background: #f6f4ef; text-align: left; padding: 8px 10px; font-weight: 700; color: var(--navy); }
+.tabel td { padding: 7px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.tabel tr.baris-err td { background: #fdecea; color: var(--danger); }
+.tabel tr.baris-info td { color: var(--muted); }
+.progres { display: flex; align-items: center; gap: 10px; margin: 10px 0; font-size: 13px; color: var(--muted); }
+.progres-bar { flex: 1; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.progres-bar span { display: block; height: 100%; width: 0; background: var(--gold); transition: width .2s; }
+.link-box { margin-top: 12px; font-size: 13px; }
+.link-row { display: flex; gap: 8px; margin-top: 6px; }
+.link-row input { margin: 0; font-size: 13px; padding: 7px 10px; }
+@media (max-width: 860px) {
+  .mode-switch { display: flex; }
+  .mode-switch button { flex: 1; }
+}
+
+.autocrat { margin-top: 6px; }
+.langkah.kecil { font-size: 13px; margin-top: 10px; }

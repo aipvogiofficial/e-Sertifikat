@@ -41,8 +41,8 @@ const Sertifikat = (() => {
     });
   }
 
-  async function siapkan() {
-    if (!gambar.template) {
+  async function siapkan({ statis = true } = {}) {
+    if (statis && !gambar.template) {
       [gambar.template, gambar.judul, gambar.logo] = await Promise.all([
         muat('assets/template.jpg'), muat('assets/judul-sertifikat.png'), muat('assets/logo.png')
       ]);
@@ -116,42 +116,82 @@ const Sertifikat = (() => {
     ctx.restore();
   }
 
-  /**
-   * d = { nomor, nama, peran, paragraf, tempat_tanggal,
-   *       label_diberikan, label_sebagai, ttd_jabatan_1, ttd_jabatan_2, ttd_nama }
-   */
-  function gambarKe(canvas, d, { areaAman = false } = {}) {
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(gambar.template, 0, 0, W, H);
+  let basisVerif = '';
+  function setBasisVerif(url) { basisVerif = url; }
+  const urlVerif = kode => basisVerif + 'cek.html?v=' + encodeURIComponent(kode);
 
-    // logo & judul
+  // posisi QR verifikasi (kanan bawah, di dalam area aman, bebas ornamen)
+  const QR = { x: 2772, y: 1930, s: 280, capY: 2252 };
+
+  function gambarQr(ctx, kode, placeholder) {
+    ctx.save();
+    if (kode && window.qrcode) {
+      const qr = window.qrcode(0, 'M');
+      qr.addData(urlVerif(kode));
+      qr.make();
+      const n = qr.getModuleCount();
+      const pad = 14;
+      const sel = (QR.s - pad * 2) / n;
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(QR.x, QR.y, QR.s, QR.s);
+      ctx.fillStyle = '#1d1d1d';
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+        if (qr.isDark(r, c)) ctx.fillRect(QR.x + pad + c * sel, QR.y + pad + r * sel, Math.ceil(sel), Math.ceil(sel));
+      }
+    } else if (placeholder) {
+      ctx.strokeStyle = '#9aa7bb'; ctx.lineWidth = 5; ctx.setLineDash([18, 12]);
+      ctx.strokeRect(QR.x, QR.y, QR.s, QR.s);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#9aa7bb'; ctx.font = `700 40px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('QR', QR.x + QR.s / 2, QR.y + QR.s / 2);
+    } else { ctx.restore(); return; }
+    ctx.fillStyle = '#4a4a4a'; ctx.font = `400 26px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Pindai untuk cek keaslian', QR.x + QR.s / 2, QR.capY);
+    if (kode) ctx.fillText(kode, QR.x + QR.s / 2, QR.capY + 34);
+    ctx.restore();
+  }
+
+  /** Bagian tetap: bingkai, logo, judul, blok tanda tangan. */
+  function gambarStatis(ctx, d) {
+    ctx.drawImage(gambar.template, 0, 0, W, H);
     const lg = L.logo;
     ctx.drawImage(gambar.logo, CX - lg.d / 2, lg.cy - lg.d / 2, lg.d, lg.d);
     const jw = L.judul.w, jh = gambar.judul.height * (jw / gambar.judul.width);
     ctx.drawImage(gambar.judul, CX - jw / 2, L.judul.cy - jh / 2, jw, jh);
-
-    teks(ctx, `Nomor : ${d.nomor || '…'}`, L.nomor.y, L.nomor.size);
-    teks(ctx, d.label_diberikan || 'Diberikan Kepada :', L.diberikan.y, L.diberikan.size);
-    teks(ctx, d.nama || 'Nama Penerima', L.nama.y, L.nama.size, { bold: true, min: L.nama.min });
-    teks(ctx, d.label_sebagai || 'Atas Partisipasinya Sebagai', L.sebagai.y, L.sebagai.size);
-    teks(ctx, String(d.peran || '').toUpperCase(), L.peran.y, L.peran.size, { bold: true, warna: BIRU_PERAN, min: L.peran.min });
-    paragraf(ctx, d.paragraf || '');
-    teks(ctx, d.tempat_tanggal || '', L.tempat.y, L.tempat.size);
     teks(ctx, d.ttd_jabatan_1 || '', L.jabatan1.y, L.jabatan1.size, { bold: true });
     teks(ctx, d.ttd_jabatan_2 || '', L.jabatan2.y, L.jabatan2.size, { bold: true });
-
-    // stempel lalu tanda tangan (multiply → latar putih tidak menutupi teks)
     gambarTengah(ctx, gambar.stempel, L.stempel.cx, L.stempel.cy, L.stempel.h, { multiply: true, alpha: 0.9 });
     gambarTengah(ctx, gambar.ttd, L.ttd.cx, L.ttd.cy, L.ttd.h, { multiply: true });
-
-    // nama penandatangan + garis bawah
     const nt = teks(ctx, d.ttd_nama || '', L.namaTtd.y, L.namaTtd.size, { bold: true });
     if (d.ttd_nama) {
       ctx.fillStyle = HITAM;
       ctx.fillRect(CX - nt.width / 2, L.namaTtd.y + nt.size * 0.55, nt.width, Math.max(3, nt.size * 0.07));
     }
+  }
 
+  /** Bagian per orang: nomor, nama, peran, paragraf, tempat-tanggal, QR. */
+  function gambarDinamis(ctx, d, pratinjau, tanpaNama) {
+    teks(ctx, `Nomor : ${d.nomor || '…'}`, L.nomor.y, L.nomor.size);
+    teks(ctx, d.label_diberikan || 'Diberikan Kepada :', L.diberikan.y, L.diberikan.size);
+    if (!tanpaNama) teks(ctx, d.nama || 'Nama Penerima', L.nama.y, L.nama.size, { bold: true, min: L.nama.min });
+    teks(ctx, d.label_sebagai || 'Atas Partisipasinya Sebagai', L.sebagai.y, L.sebagai.size);
+    teks(ctx, String(d.peran || '').toUpperCase(), L.peran.y, L.peran.size, { bold: true, warna: BIRU_PERAN, min: L.peran.min });
+    paragraf(ctx, d.paragraf || '');
+    teks(ctx, d.tempat_tanggal || '', L.tempat.y, L.tempat.size);
+    gambarQr(ctx, d.kode, pratinjau);
+  }
+
+  /**
+   * d = { nomor, nama, peran, paragraf, tempat_tanggal, kode,
+   *       label_diberikan, label_sebagai, ttd_jabatan_1, ttd_jabatan_2, ttd_nama }
+   * opsi.latar = gambar latar bertanda tangan (halaman peserta)
+   */
+  function gambarKe(canvas, d, { areaAman = false, pratinjau = false, latar = null, tanpaNama = false } = {}) {
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    if (latar) ctx.drawImage(latar, 0, 0, W, H);
+    else gambarStatis(ctx, d);
+    gambarDinamis(ctx, d, pratinjau, tanpaNama);
     if (areaAman) {
       ctx.save();
       ctx.strokeStyle = '#E24B4A';
@@ -163,16 +203,48 @@ const Sertifikat = (() => {
     return canvas;
   }
 
-  function keBlobJpg(canvas) {
-    return new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.92));
+  /** Latar bertanda tangan (tanpa data penerima) untuk halaman peserta. */
+  function buatLatar(d) {
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    gambarStatis(c.getContext('2d'), d);
+    return c.toDataURL('image/jpeg', 0.86);
   }
 
-  function kePdf(canvas) {
+  function skalakan(canvas, skala) {
+    if (!skala || skala >= 1) return canvas;
+    const c = document.createElement('canvas');
+    c.width = Math.round(W * skala); c.height = Math.round(H * skala);
+    const x = c.getContext('2d');
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(canvas, 0, 0, c.width, c.height);
+    return c;
+  }
+
+  function keBlobJpg(canvas, { skala = 1, mutu = 0.92 } = {}) {
+    return new Promise(res => skalakan(canvas, skala).toBlob(res, 'image/jpeg', mutu));
+  }
+
+  function kePdf(canvas, { skala = 1, mutu = 0.92 } = {}) {
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', compress: true });
-    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
+    pdf.addImage(skalakan(canvas, skala).toDataURL('image/jpeg', mutu), 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
     return pdf.output('blob');
   }
 
-  return { siapkan, setAset, gambarKe, keBlobJpg, kePdf, ada: j => !!gambar[j], W, H };
+  /** PDF gabungan banyak halaman. */
+  function pdfGabungan({ skala = 0.7, mutu = 0.85 } = {}) {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', compress: true });
+    let n = 0;
+    return {
+      tambah(canvas) {
+        if (n++) pdf.addPage('a4', 'landscape');
+        pdf.addImage(skalakan(canvas, skala).toDataURL('image/jpeg', mutu), 'JPEG', 0, 0, 297, 210, undefined, 'FAST');
+      },
+      selesai: () => pdf.output('blob')
+    };
+  }
+
+  return { siapkan, setAset, setBasisVerif, urlVerif, gambarKe, buatLatar, keBlobJpg, kePdf, pdfGabungan, muat, ada: j => !!gambar[j], W, H };
 })();

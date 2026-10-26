@@ -1,11 +1,11 @@
 /* Service worker e-Serti AIPVOGI
  * Naikkan VERSI setiap kali file aplikasi diubah agar perangkat admin memuat versi baru. */
-const VERSI = 'eserti-v1.2.0';
+const VERSI = 'eserti-v1.3.1';
 const FILE = [
-  './', 'index.html', 'manifest.webmanifest',
-  'css/style.css',
-  'js/config.js', 'js/render.js', 'js/demo-api.js', 'js/app.js',
-  'vendor/jspdf.umd.min.js',
+  './', 'index.html', 'cek.html', 'manifest.webmanifest',
+  'css/style.css', 'css/cek.css',
+  'js/config.js', 'js/render.js', 'js/demo-api.js', 'js/app.js', 'js/cek.js',
+  'vendor/jspdf.umd.min.js', 'vendor/qrcode.js', 'vendor/xlsx.mini.min.js', 'vendor/jszip.min.js',
   'vendor/fonts/arimo-latin-400-normal.woff2', 'vendor/fonts/arimo-latin-700-normal.woff2',
   'assets/template.jpg', 'assets/judul-sertifikat.png', 'assets/logo.png',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon.png'

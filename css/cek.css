@@ -1,0 +1,20 @@
+/* Halaman publik: unduh peserta & verifikasi */
+.pub-main { max-width: 640px; margin: 0 auto; padding: 20px 16px 40px; }
+.publik h1 { font-size: 21px; margin: 4px 0 6px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+#f-cari, #f-kode { margin-top: 16px; }
+.hasil-item { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 0; border-top: 1px solid var(--line); }
+.hasil-item:first-child { margin-top: 12px; }
+.hasil-item b { display: block; }
+.hs-img { width: 100%; border: 1px solid var(--line); border-radius: 6px; display: block; margin-bottom: 4px; }
+
+.verif { text-align: center; padding: 8px 0; }
+.verif-ic { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 700; color: #fff; }
+.verif.sah .verif-ic { background: var(--ok); }
+.verif.tidak .verif-ic { background: var(--danger); }
+.verif h1 { margin-bottom: 4px; }
+.verif.sah h1 { color: var(--ok); }
+.verif.tidak h1 { color: var(--danger); }
+.verif-tabel { width: 100%; text-align: left; border-collapse: collapse; margin-top: 18px; font-size: 14px; }
+.verif-tabel th { width: 38%; color: var(--muted); font-weight: 400; padding: 8px 8px 8px 0; vertical-align: top; border-top: 1px solid var(--line); }
+.verif-tabel td { padding: 8px 0; font-weight: 600; border-top: 1px solid var(--line); }
