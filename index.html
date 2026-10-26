@@ -39,6 +39,17 @@
       <p class="hint">Mode demo menyimpan data hanya di perangkat ini, cocok untuk mencoba sebelum server dipasang.</p>
     </details>
   </div>
+  <div class="login-card petunjuk">
+    <h2>Petunjuk penggunaan</h2>
+    <ol class="langkah">
+      <li><b>Kegiatan</b> — tambahkan kegiatan lebih dulu: nama, tanggal, daring/luring, JPL, dan kota terbit. Cukup sekali per kegiatan.</li>
+      <li><b>Buat Sertifikat</b> — pilih kegiatan, ketik nomor urut, nama penerima beserta gelar, dan peran. Cek pratinjau, lalu klik <i>Simpan + unduh JPG/PDF</i> atau <i>Simpan + bagikan</i>.</li>
+      <li><b>Sertifikat berikutnya</b> — setelah tersimpan, klik <i>Buat sertifikat berikutnya</i>: nomor naik otomatis, kegiatan dan peran tetap.</li>
+      <li><b>Riwayat</b> — cari, unduh ulang, atau perbaiki sertifikat yang sudah dibuat.</li>
+    </ol>
+    <p class="hint">TTD dan stempel cukup diunggah sekali di tab Pengaturan oleh salah satu admin; semua admin otomatis memakainya.</p>
+  </div>
+  <p class="kredit">Developed by <b>Bidang IT dan Komunikasi AIPVOGI</b></p>
 </section>
 
 <!-- ================= APLIKASI ================= -->
@@ -47,17 +58,27 @@
     <img src="assets/logo.png" alt="" class="top-logo">
     <div class="top-title"><strong>e-Serti AIPVOGI</strong><span id="u-nama" class="muted"></span></div>
     <span id="badge-demo" class="badge" hidden>Mode demo</span>
+    <button class="btn ghost sm" id="b-petunjuk" title="Petunjuk penggunaan">Petunjuk</button>
     <button class="btn ghost sm" id="b-logout" title="Keluar">Keluar</button>
   </header>
 
   <nav class="tabs" id="tabs">
-    <button data-tab="buat" class="on"><span class="ic">＋</span>Buat</button>
-    <button data-tab="riwayat"><span class="ic">≡</span>Riwayat</button>
-    <button data-tab="kegiatan"><span class="ic">◷</span>Kegiatan</button>
-    <button data-tab="pengaturan"><span class="ic">⚙</span>Pengaturan</button>
+    <button data-tab="kegiatan"><span class="no">1</span>Kegiatan</button>
+    <button data-tab="buat" class="on"><span class="no">2</span>Buat Sertifikat</button>
+    <button data-tab="riwayat"><span class="no">3</span>Riwayat</button>
+    <button data-tab="pengaturan"><span class="no">4</span>Pengaturan</button>
   </nav>
 
   <main>
+    <div class="card petunjuk-app" id="petunjuk-app" hidden>
+      <div class="petunjuk-head"><h2>Petunjuk penggunaan</h2><button class="btn sm" id="b-tutup-petunjuk">Tutup</button></div>
+      <ol class="langkah">
+      <li><b>Kegiatan</b> — tambahkan kegiatan lebih dulu: nama, tanggal, daring/luring, JPL, dan kota terbit. Cukup sekali per kegiatan.</li>
+      <li><b>Buat Sertifikat</b> — pilih kegiatan, ketik nomor urut, nama penerima beserta gelar, dan peran. Cek pratinjau, lalu klik <i>Simpan + unduh JPG/PDF</i> atau <i>Simpan + bagikan</i>.</li>
+      <li><b>Sertifikat berikutnya</b> — setelah tersimpan, klik <i>Buat sertifikat berikutnya</i>: nomor naik otomatis, kegiatan dan peran tetap.</li>
+      <li><b>Riwayat</b> — cari, unduh ulang, atau perbaiki sertifikat yang sudah dibuat.</li>
+    </ol>
+    </div>
     <!-- ---------- BUAT ---------- -->
     <section id="t-buat" class="tab">
       <div class="buat-grid">
@@ -83,7 +104,7 @@
 
           <div class="grid-nomor">
             <label>Nomor urut
-              <input name="nomor_urut" inputmode="numeric" placeholder="46" required>
+              <input name="nomor_urut" inputmode="numeric" placeholder="contoh: 46" required>
             </label>
             <div class="nomor-jadi">
               <span class="muted">Nomor lengkap</span>
@@ -94,7 +115,7 @@
           <p class="err" id="nomor-warn"></p>
 
           <label>Nama penerima (dengan gelar)
-            <input name="nama" placeholder="Dr. Nama Lengkap, S.Gz., M.Kes." required>
+            <input name="nama" placeholder="contoh: Dr. Nama Lengkap, S.Gz., M.Kes." required>
           </label>
 
           <label>Peran
@@ -105,7 +126,7 @@
             </select>
           </label>
           <label id="l-peran-lain" hidden>Tulis peran
-            <input name="peran_lain" placeholder="Reviewer">
+            <input name="peran_lain" placeholder="contoh: Reviewer">
           </label>
 
           <details class="adv">
@@ -157,7 +178,7 @@
           <h2 id="keg-judul">Tambah kegiatan</h2>
           <input type="hidden" name="id">
           <label>Nama kegiatan
-            <input name="nama" placeholder="Peningkatan Kompetensi di Bidang Pendidikan Tinggi Vokasi Gizi" required>
+            <input name="nama" placeholder="contoh: Seminar Nasional Gizi" required>
           </label>
           <div class="grid2">
             <label>Tanggal mulai<input type="date" name="tgl_mulai" required></label>
@@ -167,10 +188,10 @@
             <label>Pelaksanaan
               <select name="moda"><option>Daring</option><option>Luring</option><option>Hibrida</option><option>Daring dan Luring</option></select>
             </label>
-            <label>Jumlah JPL <span class="muted">(opsional)</span><input name="jpl" inputmode="numeric" placeholder="9"></label>
+            <label>Jumlah JPL <span class="muted">(opsional)</span><input name="jpl" inputmode="numeric" placeholder="contoh: 9"></label>
           </div>
           <div class="grid2">
-            <label>Kota terbit<input name="kota" placeholder="Jakarta"></label>
+            <label>Kota terbit<input name="kota" placeholder="contoh: Jakarta"></label>
             <label>Tanggal terbit<input type="date" name="tgl_terbit"></label>
           </div>
           <label>Pola paragraf
@@ -238,6 +259,7 @@
         </div>
       </div>
     </section>
+    <p class="kredit">Developed by <b>Bidang IT dan Komunikasi AIPVOGI</b></p>
   </main>
 </div>
 

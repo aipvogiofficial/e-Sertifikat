@@ -132,6 +132,8 @@
     Sertifikat.setAset('ttd', null); Sertifikat.setAset('stempel', null);
     tampilLogin();
   }
+  $('#b-petunjuk').onclick = () => { const p = $('#petunjuk-app'); p.hidden = !p.hidden; if (!p.hidden) window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  $('#b-tutup-petunjuk').onclick = () => { $('#petunjuk-app').hidden = true; };
   $('#b-logout').onclick = () => { if (confirm('Keluar dari aplikasi?')) keluar(); };
 
   /* ---------------- mulai ---------------- */
@@ -162,6 +164,8 @@
         toast('Offline: memakai data tersimpan. Menyimpan sertifikat butuh internet.', true);
       }
       isiSemua();
+      bukaTab(S.kegiatan.length ? 'buat' : 'kegiatan');
+      if (!LS.get('eserti_petunjuk_dilihat')) { $('#petunjuk-app').hidden = false; LS.set('eserti_petunjuk_dilihat', '1'); }
       muatRiwayat(); // di latar belakang, untuk cek nomor ganda
     } catch (err) {
       toast(err.message, true);
@@ -479,8 +483,15 @@
       const i = S.kegiatan.findIndex(k => k.id === r.data.id);
       if (i >= 0) S.kegiatan[i] = { ...S.kegiatan[i], ...r.data }; else S.kegiatan.push(r.data);
       isiPilihanKegiatan(); renderDaftarKegiatan(); resetKegiatanForm();
-      F.id_kegiatan.value = r.data.id; if (!S.teksManual) isiTeksBawaan();
-      toast('Kegiatan disimpan');
+      if (i < 0) {
+        // kegiatan baru: langsung lanjut ke Buat Sertifikat
+        kosongkanForm(); F.id_kegiatan.value = r.data.id; isiTeksBawaan(); gambarPratinjau();
+        bukaTab('buat'); F.nomor_urut.focus();
+        toast('Kegiatan tersimpan. Lanjut isi data penerima.');
+      } else {
+        if (F.id_kegiatan.value === r.data.id && !S.teksManual) { isiTeksBawaan(); gambarPratinjau(); }
+        toast('Perubahan kegiatan disimpan');
+      }
     } catch (err) { toast(err.message, true); } finally { loading(false); }
   };
 
