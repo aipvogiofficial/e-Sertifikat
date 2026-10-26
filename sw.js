@@ -1,6 +1,6 @@
 /* Service worker e-Serti AIPVOGI
  * Naikkan VERSI setiap kali file aplikasi diubah agar perangkat admin memuat versi baru. */
-const VERSI = 'eserti-v1.3.1';
+const VERSI = 'eserti-v1.4.0';
 const FILE = [
   './', 'index.html', 'cek.html', 'manifest.webmanifest',
   'css/style.css', 'css/cek.css',

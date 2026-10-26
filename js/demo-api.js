@@ -110,6 +110,11 @@ const DemoApi = (() => {
         simpan(d); return { ok: true, baru, dilewati };
       }
       case 'deleteSertifikat': d.sertifikat = d.sertifikat.filter(x => x.id !== p.id); simpan(d); return { ok: true };
+      case 'deleteSertifikatBatch': {
+        const set = new Set(p.ids || []); const awal = d.sertifikat.length;
+        d.sertifikat = d.sertifikat.filter(x => !set.has(x.id)); simpan(d);
+        return { ok: true, terhapus: awal - d.sertifikat.length };
+      }
       case 'savePengaturan': d.pengaturan = { ...d.pengaturan, ...p.data }; simpan(d); return { ok: true, pengaturan: d.pengaturan };
       case 'uploadAset': d.aset[p.jenis] = p.dataUrl; simpan(d); return { ok: true, dataUrl: p.dataUrl };
       case 'uploadLatar': {

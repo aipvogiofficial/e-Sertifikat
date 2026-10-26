@@ -212,7 +212,11 @@
           <select id="f-keg"><option value="">Semua kegiatan</option></select>
           <button class="btn" id="b-muat-riwayat">Muat ulang</button>
         </div>
-        <p class="muted" id="riwayat-info"></p>
+        <div class="pilih-bar">
+          <label class="chk"><input type="checkbox" id="c-pilih-semua"> <span id="pilih-semua-txt">Pilih semua</span></label>
+          <span class="muted" id="riwayat-info"></span>
+          <button type="button" class="btn sm danger-solid" id="b-hapus-pilih" hidden>Hapus yang dipilih</button>
+        </div>
         <div id="list-riwayat" class="list"></div>
       </div>
     </section>

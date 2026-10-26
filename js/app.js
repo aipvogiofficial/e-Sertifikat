@@ -26,7 +26,7 @@
     user: JSON.parse(LS.get('eserti_user') || 'null'),
     kegiatan: [], pengaturan: {}, sertifikat: null,
     editId: null, kode: null, teksManual: false, nomorManual: false, terakhir: null,
-    np: [], bulk: null, mode: 'satu'
+    np: [], bulk: null, mode: 'satu', pilih: new Set()
   };
   const demo = () => S.api === 'demo';
 
@@ -761,17 +761,36 @@
   $('#q').oninput = renderRiwayat;
   $('#f-keg').onchange = renderRiwayat;
 
-  function renderRiwayat() {
-    if (!S.sertifikat) return;
+  function hasilRiwayat() {
     const q = $('#q').value.toLowerCase().trim();
     const fk = $('#f-keg').value;
-    const hasil = S.sertifikat.filter(s =>
+    return S.sertifikat.filter(s =>
       (!fk || s.id_kegiatan === fk) &&
       (!q || [s.nomor, s.nama_penerima, s.nama_kegiatan, s.peran, s.kode].join(' ').toLowerCase().includes(q)));
+  }
+
+  function renderPilih(hasil) {
+    hasil = hasil || hasilRiwayat();
+    const ids = new Set(S.sertifikat.map(s => s.id));
+    [...S.pilih].forEach(id => { if (!ids.has(id)) S.pilih.delete(id); });
+    const nTampil = hasil.filter(s => S.pilih.has(s.id)).length;
+    const cs = $('#c-pilih-semua');
+    cs.checked = hasil.length > 0 && nTampil === hasil.length;
+    cs.indeterminate = nTampil > 0 && nTampil < hasil.length;
+    $('#pilih-semua-txt').textContent = hasil.length ? `Pilih semua (${hasil.length})` : 'Pilih semua';
+    const b = $('#b-hapus-pilih');
+    b.hidden = !S.pilih.size;
+    b.textContent = `Hapus yang dipilih (${S.pilih.size})`;
+  }
+
+  function renderRiwayat() {
+    if (!S.sertifikat) return;
+    const hasil = hasilRiwayat();
     $('#riwayat-info').textContent = `${hasil.length} dari ${S.sertifikat.length} sertifikat`;
     const tampil = hasil.slice(0, 300);
     $('#list-riwayat').innerHTML = tampil.length ? tampil.map(s => `
-      <div class="item" data-id="${esc(s.id)}">
+      <div class="item${S.pilih.has(s.id) ? ' dipilih' : ''}" data-id="${esc(s.id)}">
+        <input type="checkbox" class="cek" ${S.pilih.has(s.id) ? 'checked' : ''} aria-label="Pilih ${esc(s.nama_penerima)}">
         <div class="item-main">
           <b>${esc(s.nama_penerima)}<span class="pill">${esc(s.peran)}</span></b>
           <div class="item-sub">${esc(s.nomor)} · ${esc(s.nama_kegiatan)}</div>
@@ -783,9 +802,48 @@
           <button class="btn sm" data-r="edit">Buka</button>
           <button class="btn sm ghost danger" data-r="hapus" title="Hapus">Hapus</button>
         </div>
-      </div>`).join('') + (hasil.length > 300 ? `<p class="kosong">Menampilkan 300 teratas. Persempit pencarian untuk melihat lainnya.</p>` : '')
+      </div>`).join('') + (hasil.length > 300 ? `<p class="kosong">Menampilkan 300 teratas dari ${hasil.length}. "Pilih semua" tetap mencakup seluruh ${hasil.length} hasil.</p>` : '')
       : '<p class="kosong">Belum ada sertifikat.</p>';
+    renderPilih(hasil);
   }
+
+  $('#c-pilih-semua').onchange = e => {
+    const hasil = hasilRiwayat();
+    hasil.forEach(s => (e.target.checked ? S.pilih.add(s.id) : S.pilih.delete(s.id)));
+    renderRiwayat();
+  };
+
+  $('#list-riwayat').addEventListener('change', e => {
+    if (!e.target.classList.contains('cek')) return;
+    const item = e.target.closest('.item');
+    if (e.target.checked) S.pilih.add(item.dataset.id); else S.pilih.delete(item.dataset.id);
+    item.classList.toggle('dipilih', e.target.checked);
+    renderPilih();
+  });
+
+  async function hapusId(ids) {
+    const r = await api('deleteSertifikatBatch', { ids });
+    if (!r.ok) throw new Error(r.pesan);
+    const set = new Set(ids);
+    S.sertifikat = S.sertifikat.filter(x => !set.has(x.id));
+    ids.forEach(id => S.pilih.delete(id));
+    return r.terhapus;
+  }
+
+  $('#b-hapus-pilih').onclick = async () => {
+    const ids = [...S.pilih];
+    if (!ids.length) return;
+    const contoh = S.sertifikat.filter(s => S.pilih.has(s.id)).slice(0, 5).map(s => `• ${s.nama_penerima} (${s.peran})`).join('\n');
+    const pesan = `Hapus ${ids.length} arsip sertifikat?\n\n${contoh}${ids.length > 5 ? `\n… dan ${ids.length - 5} lainnya` : ''}\n\nQR pada sertifikat ini tidak akan terverifikasi lagi dan peserta tidak bisa mengunduhnya.`;
+    if (!confirm(pesan)) return;
+    if (ids.length > 20 && (prompt(`Untuk menghapus ${ids.length} sertifikat, ketik HAPUS`) || '').trim().toUpperCase() !== 'HAPUS') return toast('Penghapusan dibatalkan.');
+    loading(true, `Menghapus ${ids.length} sertifikat…`);
+    try {
+      const n = await hapusId(ids);
+      renderRiwayat(); if (S.bulk) periksaBulk();
+      toast(`${n} arsip dihapus`);
+    } catch (err) { toast(err.message, true); } finally { loading(false); }
+  };
 
   $('#list-riwayat').addEventListener('click', async e => {
     const b = e.target.closest('[data-r]'); if (!b) return;
@@ -797,7 +855,7 @@
       try {
         const r = await api('deleteSertifikat', { id: s.id });
         if (!r.ok) throw new Error(r.pesan);
-        S.sertifikat = S.sertifikat.filter(x => x.id !== s.id); renderRiwayat(); toast('Arsip dihapus');
+        S.sertifikat = S.sertifikat.filter(x => x.id !== s.id); S.pilih.delete(s.id); renderRiwayat(); toast('Arsip dihapus');
       } catch (err) { toast(err.message, true); } finally { loading(false); }
       return;
     }

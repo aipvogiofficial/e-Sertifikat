@@ -205,3 +205,11 @@ h3.sub { font-size: 14px; color: var(--navy); margin: 18px 0 4px; padding-top: 1
 
 .autocrat { margin-top: 6px; }
 .langkah.kecil { font-size: 13px; margin-top: 10px; }
+
+/* pilih & hapus banyak */
+.pilih-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 8px 0 4px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.pilih-bar #riwayat-info { flex: 1; font-size: 13px; }
+.item .cek { width: 18px; height: 18px; margin: 0; flex: none; cursor: pointer; }
+.item.dipilih { background: #fff7e8; }
+.btn.danger-solid { background: var(--danger); border-color: var(--danger); color: #fff; }
+.btn.danger-solid:hover { background: #8f1d16; }
