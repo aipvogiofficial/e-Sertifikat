@@ -110,6 +110,15 @@ const DemoApi = (() => {
         simpan(d); return { ok: true, baru, dilewati };
       }
       case 'deleteSertifikat': d.sertifikat = d.sertifikat.filter(x => x.id !== p.id); simpan(d); return { ok: true };
+      case 'perbaruiNomor': {
+        let n = 0;
+        (p.ubah || []).forEach(u => {
+          const s = d.sertifikat.find(x => x.id === u.id); if (!s) return;
+          s.nomor = u.nomor; s.nomor_urut = u.nomor_urut;
+          const dj = JSON.parse(s.data_json || '{}'); dj.nomor = u.nomor; s.data_json = JSON.stringify(dj); n++;
+        });
+        simpan(d); return { ok: true, diperbarui: n };
+      }
       case 'deleteSertifikatBatch': {
         const set = new Set(p.ids || []); const awal = d.sertifikat.length;
         d.sertifikat = d.sertifikat.filter(x => !set.has(x.id)); simpan(d);

@@ -45,11 +45,14 @@
     if (y1 === y2) return `${d1} ${BULAN[m1 - 1]} – ${d2} ${BULAN[m2 - 1]} ${y1}`;
     return `${tgl(a)} – ${tgl(b)}`;
   }
+  // bulan & tahun nomor mengikuti tanggal terbit (tanggal sertifikat ditandatangani)
+  const tanggalNomor = keg => keg ? (keg.tgl_terbit || keg.tgl_selesai || keg.tgl_mulai || '') : '';
   const pad3 = n => { const s = String(n || '').replace(/\D/g, ''); return s ? s.padStart(3, '0') : ''; };
   function nomorLengkap(urut, keg) {
     const n = pad3(urut);
-    if (!n || !keg || !keg.tgl_mulai) return '';
-    const [y, m] = keg.tgl_mulai.split('-').map(Number);
+    const t = tanggalNomor(keg);
+    if (!n || !t) return '';
+    const [y, m] = t.split('-').map(Number);
     return `${n}/${S.pengaturan.kode_nomor || 'AIPVOGI/Sek'}/${ROMAWI[m - 1]}/${y}`;
   }
   function isiParagraf(pola, keg) {
@@ -753,7 +756,7 @@
       const r = await api('listSertifikat');
       if (!r.ok) throw new Error(r.pesan);
       S.sertifikat = (r.data || []).reverse();
-      renderRiwayat(); gambarPratinjau();
+      renderRiwayat(); renderDaftarKegiatan(); gambarPratinjau();
       if (S.bulk) periksaBulk();
     } catch (err) { $('#riwayat-info').textContent = err.message; }
   }
@@ -866,13 +869,15 @@
   /* ============ TAB KEGIATAN ============ */
   const FK = $('#f-keg-form');
 
+  const kegForm = () => ({ tgl_mulai: FK.tgl_mulai.value, tgl_selesai: FK.tgl_selesai.value, tgl_terbit: FK.tgl_terbit.value });
+
   function renderNp() {
-    const k = { tgl_mulai: FK.tgl_mulai.value };
+    const k = kegForm();
     $('#np-list').innerHTML = S.np.map((r, i) => `
       <div class="np-row">
         <span class="np-peran">${esc(r.peran)}</span>
         <input data-np="${i}" inputmode="numeric" placeholder="contoh: 46" value="${esc(r.urut)}" aria-label="Nomor urut ${esc(r.peran)}">
-        <span class="np-jadi">${esc(nomorLengkap(r.urut, k) || (k.tgl_mulai ? '' : 'isi tanggal mulai'))}</span>
+        <span class="np-jadi">${esc(nomorLengkap(r.urut, k) || (tanggalNomor(k) ? '' : 'isi tanggal kegiatan'))}</span>
         <button type="button" class="np-x" data-npx="${i}" title="Hapus peran" aria-label="Hapus ${esc(r.peran)}">×</button>
       </div>`).join('') || '<p class="hint">Belum ada peran. Tambahkan lewat pilihan di bawah.</p>';
     const ada = S.np.map(r => r.peran);
@@ -884,7 +889,7 @@
   function maksNomorTahun(tahun, kecualiId) {
     let maks = 0;
     S.kegiatan.forEach(k => {
-      if (k.id === kecualiId || !k.tgl_mulai || k.tgl_mulai.slice(0, 4) !== tahun) return;
+      if (k.id === kecualiId || tanggalNomor(k).slice(0, 4) !== tahun) return;
       Object.values(nomorPeran(k)).forEach(v => (maks = Math.max(maks, parseInt(v, 10) || 0)));
     });
     (S.sertifikat || []).forEach(s => {
@@ -896,13 +901,13 @@
 
   function cekNp() {
     const info = $('#np-info');
-    const tahun = (FK.tgl_mulai.value || '').slice(0, 4);
+    const tahun = tanggalNomor(kegForm()).slice(0, 4);
     const pesan = [];
     const urutan = S.np.filter(r => r.urut).map(r => pad3(r.urut));
     const ganda = urutan.filter((u, i) => urutan.indexOf(u) !== i);
     if (ganda.length) pesan.push(`<span class="warn-txt">Nomor ${[...new Set(ganda)].join(', ')} dipakai lebih dari satu peran.</span>`);
     if (tahun) {
-      const k = { id: FK.id.value, tgl_mulai: FK.tgl_mulai.value };
+      const k = { id: FK.id.value, ...kegForm() };
       S.np.forEach(r => {
         const n = nomorLengkap(r.urut, k);
         const dipakai = n && pemakaiNomorKegiatan(n, k.id);
@@ -927,7 +932,7 @@
   $('#np-list').addEventListener('input', e => {
     const i = e.target.dataset.np; if (i === undefined) return;
     S.np[i].urut = e.target.value.replace(/\D/g, '');
-    e.target.nextElementSibling.textContent = nomorLengkap(S.np[i].urut, { tgl_mulai: FK.tgl_mulai.value });
+    e.target.nextElementSibling.textContent = nomorLengkap(S.np[i].urut, kegForm());
     cekNp();
   });
   $('#np-list').addEventListener('click', e => {
@@ -941,8 +946,8 @@
     renderNp();
   };
   $('#np-otomatis').onclick = () => {
-    const tahun = (FK.tgl_mulai.value || '').slice(0, 4);
-    if (!tahun) return toast('Isi tanggal mulai kegiatan dulu.', true);
+    const tahun = tanggalNomor(kegForm()).slice(0, 4);
+    if (!tahun) return toast('Isi tanggal kegiatan dulu.', true);
     let n = Math.max(maksNomorTahun(tahun, FK.id.value), ...S.np.map(r => parseInt(r.urut, 10) || 0));
     S.np.forEach(r => { if (!r.urut) r.urut = pad3(++n); });
     renderNp();
@@ -975,7 +980,7 @@
   FK.addEventListener('input', e => {
     if (e.target.dataset.np !== undefined) return;
     contohParagraf();
-    if (e.target.name === 'tgl_mulai') renderNp();
+    if (['tgl_mulai', 'tgl_selesai', 'tgl_terbit'].includes(e.target.name)) renderNp();
   });
 
   FK.onsubmit = async e => {
@@ -1004,9 +1009,42 @@
         }
         isiPeranBulk(); if (S.bulk) periksaBulk();
         toast('Perubahan kegiatan disimpan');
+        await sinkronNomor(S.kegiatan.find(k => k.id === r.data.id), true);
       }
     } catch (err) { toast(err.message, true); } finally { loading(false); }
   };
+
+  // sertifikat lama yang nomornya tidak sesuai pengaturan kegiatan sekarang
+  function nomorBeda(keg) {
+    if (!keg || !S.sertifikat) return [];
+    const np = nomorPeran(keg);
+    return S.sertifikat.filter(s => s.id_kegiatan === keg.id).map(s => {
+      const urut = pad3(np[s.peran] || s.nomor_urut || String(s.nomor || '').split('/')[0]);
+      const nomor = nomorLengkap(urut, keg);
+      return nomor && nomor !== s.nomor ? { id: s.id, nomor, nomor_urut: urut, lama: s.nomor } : null;
+    }).filter(Boolean);
+  }
+
+  async function sinkronNomor(keg, tanya) {
+    const ubah = nomorBeda(keg);
+    if (!ubah.length) return;
+    const contoh = [...new Set(ubah.map(u => `${u.lama} → ${u.nomor}`))].slice(0, 4).join('\n');
+    if (tanya && !confirm(`${ubah.length} sertifikat kegiatan ini nomornya belum sesuai:\n\n${contoh}\n\nPerbarui nomornya sekarang? Kode QR tetap sama; peserta cukup mengunduh ulang.`)) return;
+    loading(true, `Memperbarui nomor ${ubah.length} sertifikat…`);
+    try {
+      const r = await api('perbaruiNomor', { ubah });
+      if (!r.ok) throw new Error(r.pesan);
+      const peta = {};
+      ubah.forEach(u => (peta[u.id] = u));
+      S.sertifikat.forEach(s => {
+        const u = peta[s.id]; if (!u) return;
+        s.nomor = u.nomor; s.nomor_urut = u.nomor_urut;
+        try { const d = JSON.parse(s.data_json || '{}'); d.nomor = u.nomor; s.data_json = JSON.stringify(d); } catch (e) {}
+      });
+      renderDaftarKegiatan(); renderRiwayat();
+      toast(`Nomor ${r.diperbarui} sertifikat diperbarui`);
+    } catch (err) { toast(err.message, true); } finally { loading(false); }
+  }
 
   function renderDaftarKegiatan() {
     const urut = kegiatanUrut();
@@ -1020,10 +1058,12 @@
           <b>${esc(k.nama)}${buka ? '<span class="pill ok">Link peserta dibuka</span>' : ''}</b>
           <div class="item-sub">${esc(rentang(k.tgl_mulai, k.tgl_selesai))} · ${esc(k.moda)}${k.jpl ? ' · ' + esc(k.jpl) + ' JPL' : ''}${k.kota ? ' · ' + esc(k.kota) : ''}</div>
           <div class="item-sub">${daftarNo ? 'Nomor: ' + daftarNo : '<span class="warn-txt">Nomor per peran belum diatur</span>'}</div>
+          ${nomorBeda(k).length ? `<div class="item-sub warn-txt">${nomorBeda(k).length} sertifikat memakai nomor lama</div>` : ''}
         </div>
         <div class="item-act">
           <button class="btn sm primary" data-k="pakai">Buat sertifikat</button>
           ${buka ? `<button class="btn sm" data-salin="${esc(linkPeserta(k))}">Salin link peserta</button>` : ''}
+          ${nomorBeda(k).length ? '<button class="btn sm" data-k="nomor">Perbarui nomor</button>' : ''}
           <button class="btn sm" data-k="edit">Edit</button>
           <button class="btn sm ghost danger" data-k="hapus">Hapus</button>
         </div>
@@ -1038,6 +1078,7 @@
       F.id_kegiatan.value = k.id; $('#bk-kegiatan').value = k.id;
       kosongkanForm(); setMode('satu'); bukaTab('buat'); return;
     }
+    if (b.dataset.k === 'nomor') return sinkronNomor(k, true);
     if (b.dataset.k === 'edit') {
       ['id', 'nama', 'tgl_mulai', 'tgl_selesai', 'moda', 'jpl', 'kota', 'tgl_terbit', 'paragraf'].forEach(n => (FK[n].value = k[n] || ''));
       FK.buka_publik.checked = k.buka_publik === '1';
