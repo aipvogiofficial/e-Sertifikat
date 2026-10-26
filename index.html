@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>e-Serti AIPVOGI</title>
+  <meta name="description" content="Generator sertifikat AIPVOGI untuk narasumber, moderator, panitia, dan peran lainnya.">
+  <meta name="theme-color" content="#1F3556">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="e-Serti">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<section id="v-login" class="login" hidden>
+  <div class="login-card">
+    <img src="assets/logo.png" alt="Logo AIPVOGI" class="login-logo">
+    <h1>e-Serti AIPVOGI</h1>
+    <p class="muted">Generator sertifikat narasumber, moderator, panitia, dan lainnya</p>
+    <form id="f-login" autocomplete="on">
+      <label>Username<input name="username" autocomplete="username" required></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="btn primary block" type="submit">Masuk</button>
+      <p class="err" id="login-err"></p>
+    </form>
+    <details class="server">
+      <summary>Pengaturan server</summary>
+      <label>URL Aplikasi Web (Apps Script)
+        <input id="in-api" placeholder="https://script.google.com/macros/s/…/exec">
+      </label>
+      <div class="row-btn">
+        <button class="btn" type="button" id="b-simpan-api">Simpan URL</button>
+        <button class="btn ghost" type="button" id="b-demo">Coba mode demo</button>
+      </div>
+      <p class="hint">Mode demo menyimpan data hanya di perangkat ini, cocok untuk mencoba sebelum server dipasang.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= APLIKASI ================= -->
+<div id="v-app" hidden>
+  <header class="top">
+    <img src="assets/logo.png" alt="" class="top-logo">
+    <div class="top-title"><strong>e-Serti AIPVOGI</strong><span id="u-nama" class="muted"></span></div>
+    <span id="badge-demo" class="badge" hidden>Mode demo</span>
+    <button class="btn ghost sm" id="b-logout" title="Keluar">Keluar</button>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="buat" class="on"><span class="ic">＋</span>Buat</button>
+    <button data-tab="riwayat"><span class="ic">≡</span>Riwayat</button>
+    <button data-tab="kegiatan"><span class="ic">◷</span>Kegiatan</button>
+    <button data-tab="pengaturan"><span class="ic">⚙</span>Pengaturan</button>
+  </nav>
+
+  <main>
+    <!-- ---------- BUAT ---------- -->
+    <section id="t-buat" class="tab">
+      <div class="buat-grid">
+        <form id="f-sert" class="card" autocomplete="off">
+          <div id="edit-banner" class="banner" hidden>
+            Mengedit sertifikat <b id="edit-nomor"></b>. Menyimpan akan memperbarui arsip.
+            <button type="button" class="link" id="b-batal-edit">Buat baru</button>
+          </div>
+          <div id="aset-warn" class="banner warn" hidden>TTD atau stempel belum diunggah. Lengkapi di tab Pengaturan.</div>
+
+          <label>Kegiatan
+            <select name="id_kegiatan" id="s-kegiatan" required></select>
+          </label>
+          <p class="hint" id="kegiatan-kosong" hidden>Belum ada kegiatan. <button type="button" class="link" data-goto="kegiatan">Tambah kegiatan dulu</button></p>
+
+          <div class="grid-nomor">
+            <label>Nomor urut
+              <input name="nomor_urut" inputmode="numeric" placeholder="46" required>
+            </label>
+            <div class="nomor-jadi">
+              <span class="muted">Nomor lengkap</span>
+              <b id="o-nomor">—</b>
+            </div>
+          </div>
+          <p class="err" id="nomor-warn"></p>
+
+          <label>Nama penerima (dengan gelar)
+            <input name="nama" placeholder="Dr. Nama Lengkap, S.Gz., M.Kes." required>
+          </label>
+
+          <label>Peran
+            <select name="peran" id="s-peran">
+              <option>Narasumber</option><option>Moderator</option><option>Panitia</option>
+              <option>Pemateri</option><option>Fasilitator</option><option>Juri</option>
+              <option>Pembicara</option><option>Peserta</option><option value="__lain">Lainnya…</option>
+            </select>
+          </label>
+          <label id="l-peran-lain" hidden>Tulis peran
+            <input name="peran_lain" placeholder="Reviewer">
+          </label>
+
+          <details class="adv">
+            <summary>Sesuaikan teks untuk sertifikat ini</summary>
+            <label>Paragraf kegiatan
+              <textarea name="paragraf" rows="5"></textarea>
+            </label>
+            <label>Tempat, tanggal
+              <input name="tempat_tanggal">
+            </label>
+            <button type="button" class="link" id="b-reset-teks">Kembalikan ke teks bawaan kegiatan</button>
+          </details>
+
+          <div class="aksi">
+            <button type="button" class="btn primary" data-out="jpg">Simpan + unduh JPG</button>
+            <button type="button" class="btn primary" data-out="pdf">Simpan + unduh PDF</button>
+            <button type="button" class="btn" data-out="share">Simpan + bagikan</button>
+          </div>
+          <button type="button" class="link" id="b-baru">Kosongkan formulir</button>
+        </form>
+
+        <div class="card preview">
+          <div class="preview-head">
+            <b>Pratinjau</b>
+            <label class="chk"><input type="checkbox" id="c-aman"> Area aman</label>
+          </div>
+          <canvas id="cv"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- RIWAYAT ---------- -->
+    <section id="t-riwayat" class="tab" hidden>
+      <div class="card">
+        <div class="filter">
+          <input id="q" type="search" placeholder="Cari nama, nomor, atau kegiatan">
+          <select id="f-keg"><option value="">Semua kegiatan</option></select>
+          <button class="btn" id="b-muat-riwayat">Muat ulang</button>
+        </div>
+        <p class="muted" id="riwayat-info"></p>
+        <div id="list-riwayat" class="list"></div>
+      </div>
+    </section>
+
+    <!-- ---------- KEGIATAN ---------- -->
+    <section id="t-kegiatan" class="tab" hidden>
+      <div class="buat-grid">
+        <form id="f-keg-form" class="card" autocomplete="off">
+          <h2 id="keg-judul">Tambah kegiatan</h2>
+          <input type="hidden" name="id">
+          <label>Nama kegiatan
+            <input name="nama" placeholder="Peningkatan Kompetensi di Bidang Pendidikan Tinggi Vokasi Gizi" required>
+          </label>
+          <div class="grid2">
+            <label>Tanggal mulai<input type="date" name="tgl_mulai" required></label>
+            <label>Tanggal selesai<input type="date" name="tgl_selesai"></label>
+          </div>
+          <div class="grid2">
+            <label>Pelaksanaan
+              <select name="moda"><option>Daring</option><option>Luring</option><option>Hibrida</option><option>Daring dan Luring</option></select>
+            </label>
+            <label>Jumlah JPL <span class="muted">(opsional)</span><input name="jpl" inputmode="numeric" placeholder="9"></label>
+          </div>
+          <div class="grid2">
+            <label>Kota terbit<input name="kota" placeholder="Jakarta"></label>
+            <label>Tanggal terbit<input type="date" name="tgl_terbit"></label>
+          </div>
+          <label>Pola paragraf
+            <textarea name="paragraf" rows="4"></textarea>
+          </label>
+          <p class="hint">Kode yang otomatis diganti: <code>{kegiatan}</code> <code>{moda}</code> <code>{tanggal}</code> <code>{jpl}</code>. Tekan Enter untuk pindah baris secara manual.</p>
+          <div class="contoh"><span class="muted">Hasil:</span> <span id="o-paragraf"></span></div>
+          <div class="aksi">
+            <button class="btn primary" type="submit">Simpan kegiatan</button>
+            <button class="btn" type="button" id="b-keg-baru">Kosongkan</button>
+          </div>
+        </form>
+        <div class="card">
+          <h2>Daftar kegiatan</h2>
+          <div id="list-kegiatan" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PENGATURAN ---------- -->
+    <section id="t-pengaturan" class="tab" hidden>
+      <div class="buat-grid">
+        <form id="f-peng" class="card" autocomplete="off">
+          <h2>Penandatangan</h2>
+          <label>Jabatan baris 1<input name="ttd_jabatan_1"></label>
+          <label>Jabatan baris 2<input name="ttd_jabatan_2"></label>
+          <label>Nama penandatangan<input name="ttd_nama"></label>
+          <h2>Teks dan nomor</h2>
+          <label>Kode tengah nomor <span class="muted">(contoh: AIPVOGI/Sek)</span><input name="kode_nomor"></label>
+          <label>Label penerima<input name="label_diberikan"></label>
+          <label>Label peran<input name="label_sebagai"></label>
+          <label>Kota terbit bawaan<input name="kota_default"></label>
+          <label>Pola paragraf bawaan untuk kegiatan baru<textarea name="paragraf_default" rows="4"></textarea></label>
+          <button class="btn primary" type="submit">Simpan pengaturan</button>
+        </form>
+
+        <div>
+          <div class="card">
+            <h2>Tanda tangan dan stempel</h2>
+            <p class="hint">Disimpan di Google Drive pribadi, bukan di GitHub. Gunakan PNG berlatar transparan.</p>
+            <div class="aset-grid">
+              <div class="aset">
+                <div class="aset-img"><img id="img-ttd" alt="Tanda tangan"></div>
+                <label class="btn sm">Ganti TTD<input type="file" accept="image/png,image/jpeg" data-aset="ttd" hidden></label>
+              </div>
+              <div class="aset">
+                <div class="aset-img"><img id="img-stempel" alt="Stempel"></div>
+                <label class="btn sm">Ganti stempel<input type="file" accept="image/png,image/jpeg" data-aset="stempel" hidden></label>
+              </div>
+            </div>
+          </div>
+
+          <form id="f-pw" class="card" autocomplete="off">
+            <h2>Ganti password</h2>
+            <label>Password lama<input type="password" name="lama" autocomplete="current-password" required></label>
+            <label>Password baru <span class="muted">(min. 8 karakter)</span><input type="password" name="baru" autocomplete="new-password" minlength="8" required></label>
+            <button class="btn" type="submit">Ganti password</button>
+          </form>
+
+          <div class="card">
+            <h2>Server</h2>
+            <p class="hint" id="info-api"></p>
+            <button class="btn" id="b-sinkron">Muat ulang data dari server</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+<div id="loading" class="loading" hidden><div class="spin"></div><span id="loading-txt">Memproses…</span></div>
+
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/render.js"></script>
+<script src="js/demo-api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
